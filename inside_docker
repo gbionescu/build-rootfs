@@ -12,11 +12,6 @@ ln -s agetty /etc/init.d/agetty.ttyS0
 echo ttyS0 > /etc/securetty
 rc-update add agetty.ttyS0 default
 
-# Make sure special file systems are mounted on boot:
-#rc-update add devfs boot
-#rc-update add procfs boot
-#rc-update add sysfs boot
-
 ###
 
 ### Customize me!
@@ -54,8 +49,8 @@ rc-update add local default
 # cp /alpine_boot /etc/local.d/RunMe.start
 
 # Then, copy the newly configured system to the rootfs image:
-for d in bin etc lib root sbin usr work; do tar c "/$d" | tar x -C /my-rootfs; done
-for dir in dev proc run sys var; do mkdir /my-rootfs/${dir}; done
+for d in bin etc lib root sbin usr; do tar c "/$d" | tar x -C /my-rootfs; done
+for dir in dev proc run sys var tmp; do mkdir /my-rootfs/${dir}; done
 
 # All done, exit docker shell
 exit

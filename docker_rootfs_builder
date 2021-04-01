@@ -5,25 +5,14 @@
 
 ### Common
 apk add openrc
-apk add util-linux
 
 # Set up a login terminal on the serial console (ttyS0):
 ln -s agetty /etc/init.d/agetty.ttyS0
 echo ttyS0 > /etc/securetty
 rc-update add agetty.ttyS0 default
 
-###
-
 ### Customize me!
-# Build stuff
-apk add gcc make musl-dev linux-headers
-
-# Tools
-apk add socat git
-###
-
-### Optional: Working dir
-# mkdir -p /work
+apk add strace net-tools iproute2 bash util-linux python3 vim
 
 ### Post install stuff
 # Set up a login terminal on the serial console (ttyS0):

@@ -1,4 +1,9 @@
 #!/bin/bash
+###
+# Build a rootfs using an Alpine container
+###
+
+set -e
 
 if [ $UID != 0 ]; then
     echo "Needs root"
@@ -15,7 +20,7 @@ mount rootfs.ext4 /tmp/my-rootfs
 
 sudo docker run -it --rm \
     -v /tmp/my-rootfs:/my-rootfs \
-    -v $(pwd)/inside_docker:/run_me \
+    -v $(pwd)/docker_rootfs_builder:/run_me \
     -v $(pwd)/alpine_boot:/alpine_boot \
     alpine "/run_me"
 

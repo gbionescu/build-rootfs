@@ -12,7 +12,7 @@ fi
 
 ### Startup things
 rm rootfs.ext4 || true
-dd if=/dev/zero of=rootfs.ext4 bs=4M count=200
+dd if=/dev/zero of=rootfs.ext4 bs=4M count=20
 mkfs.ext4 rootfs.ext4
 
 mkdir -p /tmp/my-rootfs

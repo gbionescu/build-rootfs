@@ -1,1 +1,2 @@
-
+mkdir /etc/dropbear
+dropbear -RB&

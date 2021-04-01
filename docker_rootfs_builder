@@ -5,14 +5,19 @@
 
 ### Common
 apk add openrc
+apk add util-linux
 
-# Set up a login terminal on the serial console (ttyS0):
-ln -s agetty /etc/init.d/agetty.ttyS0
-echo ttyS0 > /etc/securetty
-rc-update add agetty.ttyS0 default
+###
 
 ### Customize me!
-apk add strace net-tools iproute2 bash util-linux python3 vim
+# Build stuff
+apk add vim iperf3 fio bash dropbear haveged
+
+rc-update add haveged
+###
+
+### Optional: Working dir
+# mkdir -p /work
 
 ### Post install stuff
 # Set up a login terminal on the serial console (ttyS0):
@@ -35,7 +40,7 @@ rc-update add sysfs boot
 rc-update add local default
 
 # Optional: copy startup script
-# cp /alpine_boot /etc/local.d/RunMe.start
+cp /alpine_boot /etc/local.d/RunMe.start
 
 # Then, copy the newly configured system to the rootfs image:
 for d in bin etc lib root sbin usr; do tar c "/$d" | tar x -C /my-rootfs; done

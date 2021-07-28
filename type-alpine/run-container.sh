@@ -7,7 +7,7 @@ cont_id=$(docker run -td --rm  --privileged -v $1:/rootfs.ext4 alpine)
 
 # Run the payload
 set +e
-docker exec -it "$cont_id" /bin/sh -c "`cat $SCRIPT_DIR/inside-container.sh`"
+docker exec -t "$cont_id" /bin/sh -c "`cat $SCRIPT_DIR/inside-container.sh`"
 
 rval=$?
 set -e

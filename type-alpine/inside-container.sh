@@ -1,23 +1,17 @@
 #!/bin/sh
-
+set -e
 # Based on:
 # https://github.com/firecracker-microvm/firecracker/blob/master/docs/rootfs-and-kernel-setup.md
 
-### Common
+### Customize me!
 apk add openrc
 apk add util-linux
 
-###
-
-### Customize me!
-# Build stuff
-apk add vim iperf3 fio bash dropbear haveged
+# Set up ssh access
+apk add bash dropbear haveged
 mkdir -p /etc/dropbear
 rc-update add haveged
 ###
-
-### Optional: Working dir
-# mkdir -p /work
 
 ### Post install stuff
 # Set up a login terminal on the serial console (ttyS0):
@@ -39,12 +33,31 @@ rc-update add sysfs boot
 # Enable local.d scripts
 rc-update add local default
 
-# Optional: copy startup script
-cp /alpine_boot /etc/local.d/RunMe.start
+# Create startup script
+cat <<EOF > /etc/local.d/RunMe.start
+# Mount ramfs in /tmp
+mkdir /tmp
+mount -t tmpfs tmpfs /tmp
+
+# Create an overlayfs over /etc
+# dropbear uses /etc to create keys
+mkdir -p /tmp/etc/work
+mkdir -p /tmp/etc/upper
+
+mount -t overlay \
+      -o lowerdir=/etc,upperdir=/tmp/etc/upper,workdir=/tmp/etc/work \
+       overlay /etc
+
+dropbear -RBE&
+EOF
 
 # Then, copy the newly configured system to the rootfs image:
+mkdir /my-rootfs
+mount /rootfs.ext4 /my-rootfs
+
 for d in bin etc lib root sbin usr; do tar c "/$d" | tar x -C /my-rootfs; done
 for dir in dev proc run sys var tmp; do mkdir /my-rootfs/${dir}; done
+umount /my-rootfs
 
 # All done, exit docker shell
 exit

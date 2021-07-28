@@ -27,3 +27,9 @@ jobs:
 
       - name: Build alpine image
         run: sudo ./build-rootfs.sh alpine
+
+      - name: Build ubuntu 21.04 image
+        run: sudo ./build-rootfs.sh ubuntu21.04
+
+      - name: Build al2
+        run: sudo ./build-rootfs.sh amazonlinux2

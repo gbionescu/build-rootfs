@@ -22,7 +22,7 @@ For example, to generate an `Ubuntu 21.04` rootfs, run:
 
 ## Building an initrd
 
-The initrd is
+The initrd is built using `./build-initrd.sh`. By default it's based on the alpine image.
 
 ## Customizing the build process
 

@@ -26,6 +26,8 @@ For example, to generate an `Ubuntu 21.04` rootfs, run:
 ./build-rootfs.sh ubuntu21.04
 ```
 
+Note: By default, all images are generated as sparse files.
+
 ## Building an initrd
 
 The initrd is built using `./build-initrd.sh`. By default it's based on the alpine image.

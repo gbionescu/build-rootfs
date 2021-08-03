@@ -6,11 +6,11 @@ RPATH="$SCRIPT_DIR/rootfs.ext4"
 usage() {
     echo "\
 Usage: $0 [-t]
-    -s generate sparse file - handling sparse files depends on the rootfs generator.
+    -s don't generate a sparse file
 "
 }
 
-SPARSE=0 # 1 if creating sparse file
+SPARSE=1 # 1 if creating sparse file, 0 if not
 
 while getopts "h?s" opt; do
   case "$opt" in
@@ -19,8 +19,8 @@ while getopts "h?s" opt; do
         exit 0
       ;;
     s)
-        echo "Enabling sparse file creation."
-        SPARSE=1
+        echo "Disable sparse file creation."
+        SPARSE=0
         shift
       ;;
   esac

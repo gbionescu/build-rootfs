@@ -4,6 +4,12 @@ This repo builds an `ext4` or an `initrd` using Docker containers.
 
 Note: *some assembly required.*
 
+## Prerequisites
+
+Your user needs to be able to run `docker`.
+
+If not, run scripts with sudo: `sudo build-rootfs.sh`.
+
 ## Building a rootfs
 
 Simply run:

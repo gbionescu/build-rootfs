@@ -50,6 +50,7 @@ mount -t overlay \
 
 dropbear -RBE&
 EOF
+chmod +x /etc/local.d/RunMe.start
 
 # Then, copy the newly configured system to the rootfs image:
 mkdir /my-rootfs

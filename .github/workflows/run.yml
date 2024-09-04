@@ -44,4 +44,5 @@ jobs:
           files: |
             ./rootfs_*.ext4
             ./kernel/bzImage*
+          tag_name: ${{ steps.bump.outputs.new_tag }}
           token: ${{ secrets.GITHUB_TOKEN }}

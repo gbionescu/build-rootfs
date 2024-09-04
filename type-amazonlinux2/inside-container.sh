@@ -12,8 +12,10 @@ yum install -y \
 # Set password
 echo "root:root" | chpasswd
 
-# Start the ssh server to generate keys
-systemctl start sshd
+# Generate keys
+ssh-keygen -A
+# Manually enable sshd service
+ln -s '/usr/lib/systemd/system/sshd.service' '/etc/systemd/system/multi-user.target.wants/sshd.service'
 
 # Then, copy the newly configured system to the rootfs image:
 mkdir /my-rootfs

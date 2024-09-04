@@ -30,3 +30,11 @@ jobs:
 
       - name: Build and test all images
         run: sudo ./tests/test-all.sh
+
+      - name: Push to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ./rootfs_*.ext4
+            ./kernel/bzImage*
+          token: ${{ secrets.GITHUB_TOKEN }}

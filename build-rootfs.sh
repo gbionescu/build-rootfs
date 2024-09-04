@@ -1,5 +1,12 @@
 #!/bin/bash
 set -e
+
+# Check if root
+if [[ $EUID -ne 0 ]]; then
+    echo "This script must be run as root"
+    exit 1
+fi
+
 SCRIPT_DIR="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 RPATH="$SCRIPT_DIR/rootfs.ext4"
 
@@ -19,7 +26,7 @@ while getopts "h?s" opt; do
         exit 0
       ;;
     s)
-        echo "Disable sparse file creation."
+        echo "Disabled sparse file creation."
         SPARSE=0
         shift
       ;;

@@ -26,11 +26,30 @@ For example, to generate an `Ubuntu 21.04` rootfs, run:
 ./build-rootfs.sh ubuntu21.04
 ```
 
-Note: By default, all images are generated as sparse files.
+Notes:
+
+- All images have ssh enabled by default.
+- The default user is `root` with password `root`.
+- By default, all images are generated as sparse files.
 
 ## Building an initrd
 
 The initrd is built using `./build-initrd.sh`. By default it's based on the alpine image.
+
+## Run with QEMU
+
+To run the generated rootfs with QEMU, run:
+
+```bash
+./run-qemu.sh rootfs.ext4
+```
+
+This will start a QEMU instance with the rootfs with the following options:
+- no KVM, network, or graphics
+- 1GB of RAM
+- 1 CPU (default)
+- serial console in the terminal
+- uses a kernel image that is [built-in to the repo](kernel/README.md)
 
 ## Customizing the build process
 

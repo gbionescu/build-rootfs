@@ -25,11 +25,8 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      - name: Build alpine image
-        run: sudo ./build-rootfs.sh alpine
+      - name: Install prerequisites
+        run: sudo apt install docker qemu-system
 
-      - name: Build ubuntu 21.04 image
-        run: sudo ./build-rootfs.sh ubuntu21.04
-
-      - name: Build al2
-        run: sudo ./build-rootfs.sh amazonlinux2
+      - name: Build and test all images
+        run: sudo ./tests/test-all.sh

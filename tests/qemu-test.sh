@@ -2,10 +2,11 @@
 set -e
 
 TIMEOUT=60
+SCRIPT_DIR="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 
 echo "Testing $1"
 qemu-system-x86_64 \
-    -kernel /home/debian/linux/linux-6.1.22/arch/x86/boot/bzImage \
+    -kernel "$SCRIPT_DIR/../kernel/bzImage-6.1.22" \
     -append "console=ttyS0 root=/dev/sda earlyprintk=serial" \
     -nographic -m 512M \
     -hda "$1" > serial.log 2>&1 &

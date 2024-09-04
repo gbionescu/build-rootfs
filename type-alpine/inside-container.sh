@@ -6,12 +6,8 @@ set -e
 ### Customize me!
 apk add openrc
 apk add util-linux
-
-# Set up ssh access
-apk add bash dropbear haveged
-mkdir -p /etc/dropbear
-rc-update add haveged
-###
+apk add bash
+apk add openssh
 
 ### Post install stuff
 # Set up a login terminal on the serial console (ttyS0):
@@ -29,28 +25,10 @@ echo "agetty_options=\"--autologin root\"" > /etc/conf.d/agetty-autologin
 rc-update add devfs boot
 rc-update add procfs boot
 rc-update add sysfs boot
+rc-update add sshd
 
 # Enable local.d scripts
 rc-update add local default
-
-# Create startup script
-cat <<EOF > /etc/local.d/RunMe.start
-# Mount ramfs in /tmp
-mkdir /tmp
-mount -t tmpfs tmpfs /tmp
-
-# Create an overlayfs over /etc
-# dropbear uses /etc to create keys
-mkdir -p /tmp/etc/work
-mkdir -p /tmp/etc/upper
-
-mount -t overlay \
-      -o lowerdir=/etc,upperdir=/tmp/etc/upper,workdir=/tmp/etc/work \
-       overlay /etc
-
-dropbear -RBE&
-EOF
-chmod +x /etc/local.d/RunMe.start
 
 # Then, copy the newly configured system to the rootfs image:
 mkdir /my-rootfs

@@ -17,6 +17,13 @@ See the [releases](https://github.com/gbionescu/build-rootfs/releases) page for 
 
 Have `docker` installed.
 
+Cross-architecture builds also require binfmt handlers. `build-rootfs.sh` registers
+them automatically with Docker when they are missing:
+
+```bash
+docker run --privileged --rm tonistiigi/binfmt --install arm,arm64,riscv64
+```
+
 ## Building a rootfs
 
 Simply run:
@@ -26,12 +33,24 @@ Simply run:
 ```
 
 Where `rootfs-type` is one of the root filesystem generators that starts with `type-`.
+The default architecture is `amd64`.
 
 For example, to generate an `alpine` rootfs, run:
 
 ```bash
 ./build-rootfs.sh alpine
 ```
+
+Ubuntu 22.04 and 24.04 can be built for `arm64`, `arm32`, and `riscv64`:
+
+```bash
+./build-rootfs.sh ubuntu24.04 --arch arm64
+./build-rootfs.sh ubuntu22.04 --arch arm32
+./build-rootfs.sh ubuntu24.04 --arch riscv64
+```
+
+amd64 images are written to `rootfs.ext4`. Other architectures are written to
+`rootfs_<arch>.ext4`. Use `-o <path>` to override the output path.
 
 Notes:
 
@@ -45,18 +64,24 @@ The initrd is built using `./build-initrd.sh`. By default it's based on the alpi
 
 ## Run with QEMU
 
-To run the generated rootfs with QEMU, run:
+To run a generated image with QEMU, run:
 
 ```bash
 ./run-qemu.sh rootfs.ext4
+./run-qemu.sh rootfs_arm64.ext4 --arch arm64
+./run-qemu.sh rootfs_arm32.ext4 --arch arm32
+./run-qemu.sh rootfs_riscv64.ext4 --arch riscv64
 ```
 
-This will start a QEMU instance with the rootfs with the following options:
+This starts a QEMU instance with:
 - no KVM, network, or graphics
 - 1GB of RAM
 - 1 CPU (default)
 - serial console in the terminal
-- uses a kernel image that is [built-in to the repo](kernel/README.md)
+- a kernel image that is [built-in to the repo](kernel/README.md)
+
+Emulated architectures boot much more slowly than amd64; allow several minutes for
+the first boot.
 
 ## Customizing the build process
 
@@ -68,8 +93,7 @@ This is needed because a distribution may take a larger amount of space
 - `inside-container.sh`: what is installed in a rootfs.
 Here this script usually finishes with copying the rootfs contents to a mounted rootfs.ext4 file.
 
-- `run-container.sh`: controls the container lifetime. For example the Ubuntu container is started
-twice because systemd needs to be initialized.
+- `run-container.sh`: controls the container lifetime and selects the Docker platform.
 
 ### Adding a new image type
 
@@ -77,11 +101,15 @@ Just add a new folder with the 3 files described above
 
 ### Tests
 
-Currently the built-in tests build the rootfs for all the types and run them with QEMU.
+`./tests/test-all.sh` builds all amd64 rootfs types and boots them with QEMU.
 
-Tests poll the serial console output for the `login:` prompt.
+`./tests/test-multiarch.sh` builds Ubuntu 24.04 for arm64, arm32, and riscv64 and
+boots each image. Emulated boots are slow, so this suite takes considerably longer.
 
-To run the tests, simply run:
+`./tests/test-arch.sh` checks the architecture mapping and CLI validation without
+building an image.
+
+To run the amd64 tests, simply run:
 
 ```bash
 ./tests/test-all.sh

@@ -1,2 +1,4 @@
 *.ext4
 *.log
+kernel/linux-*/
+kernel/linux-*.tar.xz

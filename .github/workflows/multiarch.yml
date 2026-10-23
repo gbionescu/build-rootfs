@@ -1,0 +1,27 @@
+name: Multiarch CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  multiarch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker.io qemu-system-arm qemu-system-misc qemu-user-static
+
+      - name: Register binfmt handlers
+        run: docker run --privileged --rm tonistiigi/binfmt --install arm,arm64,riscv64
+
+      - name: Build and test multiarch Ubuntu images
+        run: sudo ./tests/test-multiarch.sh

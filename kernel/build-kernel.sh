@@ -26,6 +26,7 @@ case "$ARCH" in
             VIRTIO VIRTIO_MMIO VIRTIO_BLK EXT4_FS
             DEVTMPFS DEVTMPFS_MOUNT
             SERIAL_AMBA_PL011 SERIAL_AMBA_PL011_CONSOLE
+            NET_9P NET_9P_VIRTIO 9P_FS
         )
         ;;
     arm32)
@@ -39,6 +40,7 @@ case "$ARCH" in
             VIRTIO VIRTIO_MMIO VIRTIO_BLK EXT4_FS
             DEVTMPFS DEVTMPFS_MOUNT
             SERIAL_AMBA_PL011 SERIAL_AMBA_PL011_CONSOLE
+            NET_9P NET_9P_VIRTIO 9P_FS
         )
         ;;
     riscv64)
@@ -52,6 +54,7 @@ case "$ARCH" in
             VIRTIO VIRTIO_MMIO VIRTIO_BLK EXT4_FS
             DEVTMPFS DEVTMPFS_MOUNT
             SERIAL_8250 SERIAL_8250_CONSOLE SERIAL_8250_DW
+            NET_9P NET_9P_VIRTIO 9P_FS
         )
         ;;
     *)

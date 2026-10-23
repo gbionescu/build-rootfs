@@ -83,6 +83,19 @@ This starts a QEMU instance with:
 Emulated architectures boot much more slowly than amd64; allow several minutes for
 the first boot.
 
+By default, `./linux-app` is shared into the guest through 9p and auto-mounted at
+`/mnt/linux-app`. Use `--share <dir>` to share another directory, or `--no-share`
+to disable sharing:
+
+```bash
+./run-qemu.sh rootfs_arm64.ext4 --arch arm64
+./run-qemu.sh rootfs_arm64.ext4 --arch arm64 --share /path/to/apps
+./run-qemu.sh rootfs_arm64.ext4 --arch arm64 --no-share
+```
+
+Images built before the 9p auto-mount change must be rebuilt to get the
+`/etc/fstab` entry.
+
 ## Customizing the build process
 
 Each rootfs generator consists of 3 files:
@@ -108,6 +121,9 @@ boots each image. Emulated boots are slow, so this suite takes considerably long
 
 `./tests/test-arch.sh` checks the architecture mapping and CLI validation without
 building an image.
+
+`./tests/test-share.sh <image> <arch>` boots an image with the default
+`linux-app` share, logs in, and verifies `/mnt/linux-app/test1/hello.c`.
 
 To run the amd64 tests, simply run:
 

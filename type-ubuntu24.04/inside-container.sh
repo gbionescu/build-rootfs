@@ -19,6 +19,12 @@ echo "root:root" | chpasswd
 # Enable the serial console; it starts on boot
 systemctl enable "getty@${SERIAL_CONSOLE}"
 
+# Mount the host linux-app share on first access
+mkdir -p /mnt/linux-app
+if ! grep -q ' /mnt/linux-app ' /etc/fstab 2>/dev/null; then
+    echo 'linuxapp /mnt/linux-app 9p trans=virtio,version=9p2000.L,nofail,x-systemd.automount 0 0' >> /etc/fstab
+fi
+
 # Then, copy the newly configured system to the rootfs image:
 mkdir /my-rootfs
 mount /rootfs.ext4 /my-rootfs

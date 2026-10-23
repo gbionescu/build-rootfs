@@ -28,3 +28,6 @@ The script downloads and extracts `linux-6.1.22.tar.xz` on first use. The arm64,
 arm32, and riscv64 configurations force virtio-mmio, virtio-blk, ext4, devtmpfs, and
 the serial console driver to be built in so the resulting images boot under QEMU
 `virt` machines with virtio-blk disks.
+
+9p (`NET_9P`, `NET_9P_VIRTIO`, `9P_FS`) is also built in for every architecture,
+so the guest can mount QEMU 9p shares.

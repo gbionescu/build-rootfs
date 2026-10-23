@@ -94,4 +94,40 @@ case "$output" in
     *) fail "unknown rootfs type should be rejected" ;;
 esac
 
+SHARE_DIR=""
+set_arch_vars amd64
+qemu_boot_command /tmp/rootfs.ext4
+case " ${QEMU_CMD[*]} " in
+    *" -fsdev "*) fail "amd64 without share should not add fsdev" ;;
+esac
+
+SHARE_DIR="/tmp/linux-app"
+qemu_boot_command /tmp/rootfs.ext4
+case " ${QEMU_CMD[*]} " in
+    *" virtio-9p-pci,fsdev=linuxapp,mount_tag=linuxapp "*) ;;
+    *) fail "amd64 share should use virtio-9p-pci" ;;
+esac
+
+set_arch_vars arm64
+qemu_boot_command /tmp/rootfs.ext4
+case " ${QEMU_CMD[*]} " in
+    *" virtio-9p-device,fsdev=linuxapp,mount_tag=linuxapp "*) ;;
+    *) fail "arm64 share should use virtio-9p-device" ;;
+esac
+
+set_arch_vars arm32
+qemu_boot_command /tmp/rootfs.ext4
+case " ${QEMU_CMD[*]} " in
+    *" virtio-9p-device,fsdev=linuxapp,mount_tag=linuxapp "*) ;;
+    *) fail "arm32 share should use virtio-9p-device" ;;
+esac
+
+set_arch_vars riscv64
+qemu_boot_command /tmp/rootfs.ext4
+case " ${QEMU_CMD[*]} " in
+    *" virtio-9p-device,fsdev=linuxapp,mount_tag=linuxapp "*) ;;
+    *) fail "riscv64 share should use virtio-9p-device" ;;
+esac
+SHARE_DIR=""
+
 echo "All architecture tests passed"

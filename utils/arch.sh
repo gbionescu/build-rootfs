@@ -6,6 +6,9 @@ KERNEL_DIR="$( cd "$ARCH_UTILS_DIR/.." >/dev/null 2>&1 ; pwd -P )/kernel"
 
 VALID_ARCHS="amd64 arm64 arm32 riscv64"
 
+SHARE_DIR=""
+SHARE_TAG="linuxapp"
+
 normalize_arch() {
     case "$1" in
         ""|amd64|x86_64) echo "amd64" ;;
@@ -91,4 +94,13 @@ qemu_boot_command() {
                       -device virtio-blk-device,drive=hd0)
             ;;
     esac
+
+    if [[ -n "$SHARE_DIR" ]]; then
+        QEMU_CMD+=(-fsdev "local,id=$SHARE_TAG,path=$SHARE_DIR,security_model=none")
+        if [[ "$ARCH" == "amd64" ]]; then
+            QEMU_CMD+=(-device "virtio-9p-pci,fsdev=$SHARE_TAG,mount_tag=$SHARE_TAG")
+        else
+            QEMU_CMD+=(-device "virtio-9p-device,fsdev=$SHARE_TAG,mount_tag=$SHARE_TAG")
+        fi
+    fi
 }

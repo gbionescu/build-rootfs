@@ -6,10 +6,14 @@ source "$SCRIPT_DIR/utils/arch.sh"
 
 usage() {
     cat <<EOF
-Usage: $0 <rootfs-image> [options]
+Usage: $0 [rootfs-image] [options]
+
+The rootfs image can also be passed with --rootfs. When omitted, it defaults to
+rootfs.ext4 for amd64 and rootfs_<arch>.ext4 for other architectures.
 
 Options:
   -a, --arch <arch>    Architecture: amd64 (default), arm64, arm32, riscv64
+  -r, --rootfs <path>  Override the rootfs image
   -k, --kernel <path>  Override the kernel image
   -s, --share <dir>    Share a host directory at /mnt/linux-app (default: ./linux-app)
       --no-share       Disable the default ./linux-app share
@@ -21,6 +25,7 @@ EOF
 
 IMAGE=""
 ARCH_INPUT="amd64"
+ROOTFS_OVERRIDE=""
 KERNEL_OVERRIDE=""
 SHARE_INPUT=""
 NO_SHARE=0
@@ -40,6 +45,14 @@ while [[ $# -gt 0 ]]; do
             ;;
         --arch=*)
             ARCH_INPUT="${1#*=}"
+            shift
+            ;;
+        -r|--rootfs)
+            ROOTFS_OVERRIDE="${2:?Missing value for $1}"
+            shift 2
+            ;;
+        --rootfs=*)
+            ROOTFS_OVERRIDE="${1#*=}"
             shift
             ;;
         -k|--kernel)
@@ -92,15 +105,22 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [[ -z "$IMAGE" ]]; then
-    usage
-    exit 1
-fi
-
 if ! set_arch_vars "$ARCH_INPUT"; then
     echo "Unknown architecture: $ARCH_INPUT. Try one of: $VALID_ARCHS"
     exit 1
 fi
+
+if [[ -n "$ROOTFS_OVERRIDE" && -n "$IMAGE" ]]; then
+    echo "Cannot use a positional rootfs image together with --rootfs"
+    exit 1
+fi
+
+if [[ -n "$ROOTFS_OVERRIDE" ]]; then
+    IMAGE="$ROOTFS_OVERRIDE"
+elif [[ -z "$IMAGE" ]]; then
+    IMAGE="$ROOTFS_IMAGE"
+fi
+IMAGE="$(realpath -m "$IMAGE")"
 
 if [[ -n "$KERNEL_OVERRIDE" ]]; then
     KERNEL_IMAGE="$(realpath -m "$KERNEL_OVERRIDE")"
@@ -170,6 +190,7 @@ fi
 
 if [[ ! -f "$IMAGE" ]]; then
     echo "Rootfs image not found: $IMAGE"
+    echo "Specify one with --rootfs <path> or pass it as the first argument."
     exit 1
 fi
 

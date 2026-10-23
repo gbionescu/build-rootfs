@@ -2,7 +2,8 @@
 # Shared architecture definitions for rootfs builds and QEMU runs.
 
 ARCH_UTILS_DIR="$( cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 ; pwd -P )"
-KERNEL_DIR="$( cd "$ARCH_UTILS_DIR/.." >/dev/null 2>&1 ; pwd -P )/kernel"
+REPO_DIR="$( cd "$ARCH_UTILS_DIR/.." >/dev/null 2>&1 ; pwd -P )"
+KERNEL_DIR="$REPO_DIR/kernel"
 
 VALID_ARCHS="amd64 arm64 arm32 riscv64"
 
@@ -66,6 +67,12 @@ set_arch_vars() {
             BINFMT_NAME="qemu-riscv64"
             ;;
     esac
+
+    if [[ "$ARCH" == "amd64" ]]; then
+        ROOTFS_IMAGE="$REPO_DIR/rootfs.ext4"
+    else
+        ROOTFS_IMAGE="$REPO_DIR/rootfs_$ARCH.ext4"
+    fi
 }
 
 qemu_boot_command() {

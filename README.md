@@ -67,14 +67,55 @@ The initrd is built using `./build-initrd.sh`. By default it's based on the alpi
 
 ## Run with QEMU
 
-To run a generated image with QEMU, run:
+Usage:
 
 ```bash
-./run-qemu.sh rootfs.ext4
-./run-qemu.sh rootfs_arm64.ext4 --arch arm64
-./run-qemu.sh rootfs_arm32.ext4 --arch arm32
-./run-qemu.sh rootfs_riscv64.ext4 --arch riscv64
+./run-qemu.sh [rootfs-image] [options]
 ```
+
+The rootfs image is optional. When omitted, `run-qemu.sh` uses the same default
+paths as `build-rootfs.sh`:
+
+| Architecture | Default rootfs | Default kernel |
+|--------------|----------------|----------------|
+| `amd64` | `rootfs.ext4` | `kernel/bzImage-6.1.22` |
+| `arm64` | `rootfs_arm64.ext4` | `kernel/Image-6.1.22-arm64` |
+| `arm32` | `rootfs_arm32.ext4` | `kernel/zImage-6.1.22-arm32` |
+| `riscv64` | `rootfs_riscv64.ext4` | `kernel/Image-6.1.22-riscv64` |
+
+The default rootfs paths are the outputs of `build-rootfs.sh`; build the image
+first. The kernels are [built-in to the repo](kernel/README.md). Override the
+rootfs with `--rootfs <path>` or the positional argument, and the kernel with
+`-k <path>` or `--kernel <path>`. Do not pass both a positional rootfs and
+`--rootfs`; the script rejects the ambiguity. To build a custom kernel instead,
+run `./kernel/build-kernel.sh <arch>` and pass the result with `--kernel`.
+
+Available options:
+
+| Option | Description |
+|--------|-------------|
+| `-a, --arch <arch>` | Architecture: `amd64` (default), `arm64`, `arm32`, `riscv64` |
+| `-r, --rootfs <path>` | Rootfs image path (defaults per architecture above) |
+| `-k, --kernel <path>` | Kernel image path (defaults per architecture above) |
+| `-s, --share <dir>` | Share a host directory at `/mnt/linux-app` (default: `./linux-app`) |
+| `--no-share` | Disable the default `./linux-app` share |
+| `--no-net` | Disable QEMU user-mode networking |
+| `--ssh-port <port>` | SSH host forward port on `127.0.0.1` (default: `2222`) |
+| `-h, --help` | Show help |
+
+Examples:
+
+```bash
+./run-qemu.sh                                  # amd64, uses rootfs.ext4
+./run-qemu.sh rootfs_arm64.ext4 --arch arm64
+./run-qemu.sh --arch arm64                     # uses rootfs_arm64.ext4
+./run-qemu.sh --arch arm32 --rootfs rootfs_ubuntu24.04_arm32.ext4
+./run-qemu.sh --arch riscv64 --kernel /path/to/Image-6.1.22-riscv64
+./run-qemu.sh --rootfs /tmp/rootfs.ext4 --kernel /tmp/bzImage
+```
+
+Images built with `build-rootfs.sh -o <path>` are not at the default location;
+pass them with `--rootfs <path>` or as the positional argument.
 
 This starts a QEMU instance with:
 - no KVM or graphics
@@ -83,7 +124,7 @@ This starts a QEMU instance with:
 - serial console in the terminal
 - user-mode networking with DHCP on `eth0`
 - SSH forwarded to `127.0.0.1:2222`
-- a kernel image that is [built-in to the repo](kernel/README.md)
+- the default kernel image for the selected architecture
 
 Emulated architectures boot much more slowly than amd64; allow several minutes for
 the first boot.
@@ -102,9 +143,9 @@ By default, `./linux-app` is shared into the guest through 9p and auto-mounted a
 to disable sharing:
 
 ```bash
-./run-qemu.sh rootfs_arm64.ext4 --arch arm64
-./run-qemu.sh rootfs_arm64.ext4 --arch arm64 --share /path/to/apps
-./run-qemu.sh rootfs_arm64.ext4 --arch arm64 --no-share
+./run-qemu.sh --arch arm64
+./run-qemu.sh --arch arm64 --share /path/to/apps
+./run-qemu.sh --arch arm64 --no-share
 ```
 
 Images built before the 9p auto-mount change must be rebuilt to get the

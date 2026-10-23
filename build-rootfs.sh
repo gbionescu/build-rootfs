@@ -93,11 +93,7 @@ if ! type_supports_arch "$TYPE" "$ARCH"; then
 fi
 
 if [[ -z "$OUTPUT" ]]; then
-    if [[ "$ARCH" == "amd64" ]]; then
-        RPATH="$SCRIPT_DIR/rootfs.ext4"
-    else
-        RPATH="$SCRIPT_DIR/rootfs_$ARCH.ext4"
-    fi
+    RPATH="$ROOTFS_IMAGE"
 else
     RPATH="$(realpath -m "$OUTPUT")"
 fi

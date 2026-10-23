@@ -13,6 +13,8 @@ Options:
   -k, --kernel <path>  Override the kernel image
   -s, --share <dir>    Share a host directory at /mnt/linux-app (default: ./linux-app)
       --no-share       Disable the default ./linux-app share
+      --no-net         Disable QEMU user-mode networking
+      --ssh-port <p>   SSH host forward port on 127.0.0.1 (default: 2222)
   -h, --help           Show this help
 EOF
 }
@@ -22,6 +24,9 @@ ARCH_INPUT="amd64"
 KERNEL_OVERRIDE=""
 SHARE_INPUT=""
 NO_SHARE=0
+NET_ENABLED=1
+NET_BACKEND="user"
+SSH_PORT=2222
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -55,6 +60,18 @@ while [[ $# -gt 0 ]]; do
             ;;
         --no-share)
             NO_SHARE=1
+            shift
+            ;;
+        --no-net)
+            NET_ENABLED=0
+            shift
+            ;;
+        --ssh-port)
+            SSH_PORT="${2:?Missing value for $1}"
+            shift 2
+            ;;
+        --ssh-port=*)
+            SSH_PORT="${1#*=}"
             shift
             ;;
         -*)
@@ -115,6 +132,40 @@ if [[ -n "$SHARE_DIR" ]]; then
         echo "Share path must not contain commas: $SHARE_DIR"
         exit 1
     fi
+fi
+
+if ! [[ "$SSH_PORT" =~ ^[0-9]+$ ]] || (( SSH_PORT < 1 || SSH_PORT > 65535 )); then
+    echo "Invalid SSH port: $SSH_PORT"
+    exit 1
+fi
+
+if [[ "$NET_ENABLED" -eq 1 ]]; then
+    if ! command -v "$QEMU_BIN" >/dev/null 2>&1; then
+        echo "QEMU binary not found: $QEMU_BIN"
+        exit 1
+    fi
+
+    qemu_has_user_net() {
+        local bin="$1" machine
+        case "$ARCH" in
+            amd64) machine=pc ;;
+            *) machine=virt ;;
+        esac
+        "$bin" -M "$machine" -netdev help 2>&1 | grep -qx "user"
+    }
+
+    if ! qemu_has_user_net "$QEMU_BIN"; then
+        fallback_bin="/usr/bin/$(basename "$QEMU_BIN")"
+        if [[ -x "$fallback_bin" && "$fallback_bin" != "$QEMU_BIN" ]] && qemu_has_user_net "$fallback_bin"; then
+            echo "Using $fallback_bin for user-mode networking" >&2
+            QEMU_BIN="$fallback_bin"
+        else
+            echo "QEMU user networking is not available: $QEMU_BIN"
+            echo "Install a QEMU build with slirp support or use --no-net."
+            exit 1
+        fi
+    fi
+    NET_BACKEND=user
 fi
 
 if [[ ! -f "$IMAGE" ]]; then

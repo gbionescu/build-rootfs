@@ -33,7 +33,7 @@ export TEST_SHARE="$SHARE_DIR"
 expect <<'EOF'
 set timeout 300
 log_user 1
-spawn -noecho $env(RUN_QEMU) $env(TEST_IMG) --arch $env(TEST_ARCH) --share $env(TEST_SHARE)
+spawn -noecho $env(RUN_QEMU) $env(TEST_IMG) --arch $env(TEST_ARCH) --share $env(TEST_SHARE) --no-net
 expect {
     "login:" {}
     timeout { puts "TIMEOUT waiting for login"; exit 1 }

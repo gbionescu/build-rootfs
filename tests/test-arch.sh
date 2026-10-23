@@ -130,4 +130,45 @@ case " ${QEMU_CMD[*]} " in
 esac
 SHARE_DIR=""
 
+NET_ENABLED=1
+NET_BACKEND=user
+SSH_PORT=2222
+set_arch_vars amd64
+qemu_boot_command /tmp/rootfs.ext4
+case " ${QEMU_CMD[*]} " in
+    *" -netdev user,id=net0,hostfwd=tcp:127.0.0.1:2222-:22 "*) ;;
+    *) fail "amd64 network should use user backend and hostfwd" ;;
+esac
+case " ${QEMU_CMD[*]} " in
+    *" virtio-net-pci,netdev=net0 "*) ;;
+    *) fail "amd64 network should use virtio-net-pci" ;;
+esac
+
+set_arch_vars arm64
+qemu_boot_command /tmp/rootfs.ext4
+case " ${QEMU_CMD[*]} " in
+    *" virtio-net-device,netdev=net0 "*) ;;
+    *) fail "arm64 network should use virtio-net-device" ;;
+esac
+
+set_arch_vars arm32
+qemu_boot_command /tmp/rootfs.ext4
+case " ${QEMU_CMD[*]} " in
+    *" virtio-net-device,netdev=net0 "*) ;;
+    *) fail "arm32 network should use virtio-net-device" ;;
+esac
+
+set_arch_vars riscv64
+qemu_boot_command /tmp/rootfs.ext4
+case " ${QEMU_CMD[*]} " in
+    *" virtio-net-device,netdev=net0 "*) ;;
+    *) fail "riscv64 network should use virtio-net-device" ;;
+esac
+
+NET_ENABLED=0
+qemu_boot_command /tmp/rootfs.ext4
+case " ${QEMU_CMD[*]} " in
+    *" -netdev "*) fail "network disabled should not add netdev" ;;
+esac
+
 echo "All architecture tests passed"

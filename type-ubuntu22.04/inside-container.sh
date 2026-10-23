@@ -4,10 +4,21 @@ SERIAL_CONSOLE="${SERIAL_CONSOLE:-ttyS0}"
 
 ### Customize me!
 DEBIAN_FRONTEND="noninteractive" apt-get install -y \
+      git \
+      gcc \
+      libc6-dev \
+      vim \
+      sudo \
+      ethtool \
+      iputils-ping \
+      net-tools \
       openssh-server \
       openssh-client \
+      udhcpc \
+      apt \
+      ca-certificates \
       iproute2 \
-      net-tools strace
+      strace
 
 # Enable SSH
 echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
@@ -15,6 +26,29 @@ systemctl enable ssh
 
 # Set password
 echo "root:root" | chpasswd
+
+# QEMU user-mode networking: let udhcpc own resolv.conf
+systemctl disable systemd-resolved 2>/dev/null || true
+systemctl mask systemd-resolved.service 2>/dev/null || true
+rm -f /sbin/resolvconf
+
+cat > /etc/systemd/system/udhcpc.service <<'EOF'
+[Unit]
+Description=udhcpc DHCP client on eth0
+After=network.target
+ConditionPathExists=/sys/class/net/eth0
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/udhcpc -f -i eth0 -R -s /etc/udhcpc/default.script
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl enable udhcpc.service
 
 # Enable the serial console; it starts on boot
 systemctl enable "getty@${SERIAL_CONSOLE}"

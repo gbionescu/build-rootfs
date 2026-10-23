@@ -57,6 +57,9 @@ Notes:
 - All images have ssh enabled by default.
 - The default user is `root` with password `root`.
 - By default, all images are generated as sparse files.
+- Ubuntu images include `git`, `gcc`, `vim`, `sudo`, `ethtool`, `ping`,
+  `net-tools`, OpenSSH, `udhcpc`, and `apt`, so they can be used as small
+  development guests.
 
 ## Building an initrd
 
@@ -74,14 +77,25 @@ To run a generated image with QEMU, run:
 ```
 
 This starts a QEMU instance with:
-- no KVM, network, or graphics
+- no KVM or graphics
 - 1GB of RAM
 - 1 CPU (default)
 - serial console in the terminal
+- user-mode networking with DHCP on `eth0`
+- SSH forwarded to `127.0.0.1:2222`
 - a kernel image that is [built-in to the repo](kernel/README.md)
 
 Emulated architectures boot much more slowly than amd64; allow several minutes for
 the first boot.
+
+The guest obtains `10.0.2.15` through `udhcpc`. Connect with:
+
+```bash
+ssh -p 2222 root@127.0.0.1
+```
+
+Use `--no-net` to disable networking and `--ssh-port <port>` to change the host
+forward port.
 
 By default, `./linux-app` is shared into the guest through 9p and auto-mounted at
 `/mnt/linux-app`. Use `--share <dir>` to share another directory, or `--no-share`
@@ -124,6 +138,10 @@ building an image.
 
 `./tests/test-share.sh <image> <arch>` boots an image with the default
 `linux-app` share, logs in, and verifies `/mnt/linux-app/test1/hello.c`.
+
+`./tests/test-tools.sh <image> <arch>` boots with networking and the `linux-app`
+share, then checks the installed tools, compiles `hello.c`, pings `10.0.2.2`,
+runs `apt-get update`, and verifies SSH is active.
 
 To run the amd64 tests, simply run:
 

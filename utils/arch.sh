@@ -9,6 +9,10 @@ VALID_ARCHS="amd64 arm64 arm32 riscv64"
 SHARE_DIR=""
 SHARE_TAG="linuxapp"
 
+NET_ENABLED=0
+NET_BACKEND="user"
+SSH_PORT=2222
+
 normalize_arch() {
     case "$1" in
         ""|amd64|x86_64) echo "amd64" ;;
@@ -69,27 +73,27 @@ qemu_boot_command() {
     case "$ARCH" in
         amd64)
             QEMU_CMD=("$QEMU_BIN" -kernel "$KERNEL_IMAGE"
-                      -append "console=$SERIAL_CONSOLE root=$ROOT_DEVICE rw earlyprintk=serial"
+                      -append "console=$SERIAL_CONSOLE root=$ROOT_DEVICE rw net.ifnames=0 earlyprintk=serial"
                       -nographic -m 1G -hda "$image")
             ;;
         arm64)
             QEMU_CMD=("$QEMU_BIN" -M virt -cpu cortex-a72 -m 1G -nographic
                       -kernel "$KERNEL_IMAGE"
-                      -append "console=$SERIAL_CONSOLE root=$ROOT_DEVICE rw rootwait earlyprintk"
+                      -append "console=$SERIAL_CONSOLE root=$ROOT_DEVICE rw rootwait net.ifnames=0 earlyprintk"
                       -drive "file=$image,format=raw,if=none,id=hd0"
                       -device virtio-blk-device,drive=hd0)
             ;;
         arm32)
             QEMU_CMD=("$QEMU_BIN" -M virt -cpu cortex-a15 -m 1G -nographic
                       -kernel "$KERNEL_IMAGE"
-                      -append "console=$SERIAL_CONSOLE root=$ROOT_DEVICE rw rootwait earlyprintk"
+                      -append "console=$SERIAL_CONSOLE root=$ROOT_DEVICE rw rootwait net.ifnames=0 earlyprintk"
                       -drive "file=$image,format=raw,if=none,id=hd0"
                       -device virtio-blk-device,drive=hd0)
             ;;
         riscv64)
             QEMU_CMD=("$QEMU_BIN" -M virt -m 1G -nographic -bios default
                       -kernel "$KERNEL_IMAGE"
-                      -append "console=$SERIAL_CONSOLE root=$ROOT_DEVICE rw rootwait earlyprintk"
+                      -append "console=$SERIAL_CONSOLE root=$ROOT_DEVICE rw rootwait net.ifnames=0 earlyprintk"
                       -drive "file=$image,format=raw,if=none,id=hd0"
                       -device virtio-blk-device,drive=hd0)
             ;;
@@ -101,6 +105,15 @@ qemu_boot_command() {
             QEMU_CMD+=(-device "virtio-9p-pci,fsdev=$SHARE_TAG,mount_tag=$SHARE_TAG")
         else
             QEMU_CMD+=(-device "virtio-9p-device,fsdev=$SHARE_TAG,mount_tag=$SHARE_TAG")
+        fi
+    fi
+
+    if [[ "$NET_ENABLED" -eq 1 ]]; then
+        QEMU_CMD+=(-netdev "user,id=net0,hostfwd=tcp:127.0.0.1:${SSH_PORT}-:22")
+        if [[ "$ARCH" == "amd64" ]]; then
+            QEMU_CMD+=(-device "virtio-net-pci,netdev=net0")
+        else
+            QEMU_CMD+=(-device "virtio-net-device,netdev=net0")
         fi
     fi
 }

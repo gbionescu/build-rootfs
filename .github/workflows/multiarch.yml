@@ -10,7 +10,7 @@ on:
 jobs:
   multiarch:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 240
 
     steps:
       - uses: actions/checkout@v4
@@ -18,10 +18,13 @@ jobs:
       - name: Install prerequisites
         run: |
           sudo apt-get update
-          sudo apt-get install -y docker.io qemu-system-arm qemu-system-misc qemu-user-static
+          sudo apt-get install -y docker.io qemu-system-arm qemu-system-misc qemu-user-static expect
 
       - name: Register binfmt handlers
         run: docker run --privileged --rm tonistiigi/binfmt --install arm,arm64,riscv64
 
       - name: Build and test multiarch Ubuntu images
         run: sudo ./tests/test-multiarch.sh
+
+      - name: Test arm64 tools and networking
+        run: sudo ./tests/test-tools.sh rootfs_ubuntu24.04_arm64.ext4 arm64

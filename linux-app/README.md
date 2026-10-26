@@ -1,0 +1,60 @@
+# linux-app demos
+
+这个目录默认通过 QEMU 9p 共享到 guest 的 `/mnt/linux-app`，用于演示 Linux
+应用层开发中的关键技术。所有示例都是自校验的：退出码为 0 表示检查通过，并打印
+`PASS`。
+
+## 示例
+
+| 目录 | 技术点 | 关键 API |
+|------|--------|----------|
+| `process-fork` | 创建子进程并回收 | `fork`, `waitpid`, `_exit` |
+| `pthread-sum` | 多线程与互斥锁 | `pthread_create`, `pthread_mutex_lock` |
+| `pipe-ipc` | 匿名管道与命名管道 | `pipe`, `mkfifo`, `read`, `write` |
+| `shm-sem` | 共享内存与跨进程信号量 | `shm_open`, `mmap`, `sem_init`, `sem_wait` |
+| `signal-demo` | 异步信号与同步等待 | `sigaction`, `raise`, `sigwait` |
+| `epoll-server` | 非阻塞 TCP echo 服务 | `socket`, `epoll_wait`, `accept4` |
+| `mmap-file` | 内存映射文件读写 | `mmap`, `msync`, `munmap` |
+
+另有 `test1/hello.c`（最小 Hello World）和 `example-matrix1`（ARM NEON/SVE
+矩阵乘法），后者需要 ARM 工具链和 SVE 支持。
+
+## 在宿主机构建
+
+```bash
+make            # 编译全部示例
+make test       # 等同 ./run-all.sh
+make clean
+```
+
+也可以只构建一个示例：
+
+```bash
+make -C process-fork
+./process-fork/fork_demo
+```
+
+## 在 guest 内运行
+
+Ubuntu rootfs 里没有安装 `make`，但 `run-all.sh` 直接调用 `gcc` 编译，因此
+可以直接在 guest 内运行：
+
+```bash
+cd /mnt/linux-app
+./run-all.sh
+```
+
+单独编译某个示例：
+
+```bash
+gcc -Wall -Wextra -O2 -D_GNU_SOURCE process-fork/fork_demo.c -o /tmp/fork_demo
+/tmp/fork_demo
+```
+
+`pthread-sum`、`shm-sem` 需要 `-pthread`，`shm-sem` 还需要 `-lrt`；`epoll-server`
+是客户端/服务端模型，需要分别启动：
+
+```bash
+./epoll-server/epoll_server server 18080
+./epoll-server/epoll_server client 18080
+```

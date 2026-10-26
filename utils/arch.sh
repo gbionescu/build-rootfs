@@ -84,7 +84,7 @@ qemu_boot_command() {
                       -nographic -m 1G -hda "$image")
             ;;
         arm64)
-            QEMU_CMD=("$QEMU_BIN" -M virt -cpu cortex-a72 -m 1G -nographic
+            QEMU_CMD=("$QEMU_BIN" -cpu max,sve=on,sve256=on -M virt,gic-version=3,its=on,iommu=smmuv3,mte=on -m 1G -nographic
                       -kernel "$KERNEL_IMAGE"
                       -append "console=$SERIAL_CONSOLE root=$ROOT_DEVICE rw rootwait net.ifnames=0 earlyprintk"
                       -drive "file=$image,format=raw,if=none,id=hd0"

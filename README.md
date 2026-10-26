@@ -61,6 +61,21 @@ Notes:
   `net-tools`, OpenSSH, `udhcpc`, and `apt`, so they can be used as small
   development guests.
 
+## Building a kernel
+
+`./build_kernel.sh` builds the Linux 6.1.22 kernel used by `run-qemu.sh`:
+
+```bash
+./build_kernel.sh                              # amd64
+./build_kernel.sh --arch arm64
+./build_kernel.sh --arch riscv64 -o /tmp/Image-riscv64
+```
+
+It wraps `kernel/build-kernel.sh` and accepts `-a, --arch` (default `amd64`),
+`-o, --output`, and `-h, --help`. Without `-o`, the image is written to the
+default path under `kernel/`. Cross-compiling requires the toolchains listed in
+[kernel/README.md](kernel/README.md).
+
 ## Building an initrd
 
 The initrd is built using `./build-initrd.sh`. By default it's based on the alpine image.
@@ -112,6 +127,7 @@ Examples:
 ./run-qemu.sh --arch arm32 --rootfs rootfs_ubuntu24.04_arm32.ext4
 ./run-qemu.sh --arch riscv64 --kernel /path/to/Image-6.1.22-riscv64
 ./run-qemu.sh --rootfs /tmp/rootfs.ext4 --kernel /tmp/bzImage
+./run-qemu.sh --arch arm64 --rootfs /tmp/rootfs.ext4 --kernel /tmp/bzImage
 ```
 
 Images built with `build-rootfs.sh -o <path>` are not at the default location;

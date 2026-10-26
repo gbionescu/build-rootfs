@@ -98,6 +98,24 @@ case "$output" in
     *) fail "unknown rootfs type should be rejected" ;;
 esac
 
+output=$(./build_kernel.sh --help 2>&1)
+case "$output" in
+    *"Usage: ./build_kernel.sh"*) ;;
+    *) fail "build_kernel.sh --help should print usage" ;;
+esac
+
+output=$(./build_kernel.sh --arch sparc 2>&1 || true)
+case "$output" in
+    *"Unknown architecture: sparc"*) ;;
+    *) fail "build_kernel.sh should reject unknown architectures" ;;
+esac
+
+output=$(./build_kernel.sh --bogus 2>&1 || true)
+case "$output" in
+    *"Unknown option: --bogus"*) ;;
+    *) fail "build_kernel.sh should reject unknown options" ;;
+esac
+
 output=$(./run-qemu.sh rootfs.ext4 --rootfs /tmp/other.ext4 2>&1 || true)
 case "$output" in
     *"Cannot use a positional rootfs image together with --rootfs"*) ;;

@@ -18,6 +18,13 @@ To build a kernel image, run:
 ./build-kernel.sh riscv64
 ```
 
+From the repository root, `./build_kernel.sh` wraps this script with the same
+architecture names used by `build-rootfs.sh`:
+
+```bash
+./build_kernel.sh --arch arm64
+```
+
 Cross-compiling requires the matching toolchain:
 
 ```bash
@@ -31,3 +38,7 @@ under QEMU `virt` machines with virtio-blk disks and user-mode networking.
 
 9p (`NET_9P`, `NET_9P_VIRTIO`, `9P_FS`) is also built in for every architecture,
 so the guest can mount QEMU 9p shares.
+
+Running the top-level `./build_kernel.sh` accepts the same architecture names as
+`build-rootfs.sh` (`amd64`, `arm64`, `arm32`, `riscv64`) and can copy the result
+with `-o <path>`.

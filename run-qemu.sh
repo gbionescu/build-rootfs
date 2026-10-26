@@ -196,7 +196,7 @@ fi
 
 if [[ ! -f "$KERNEL_IMAGE" ]]; then
     echo "Kernel not found: $KERNEL_IMAGE"
-    echo "Build it with: ./kernel/build-kernel.sh $ARCH"
+    echo "Build it with: ./build_kernel.sh --arch $ARCH"
     exit 1
 fi
 

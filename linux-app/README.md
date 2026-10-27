@@ -15,6 +15,7 @@
 | `signal-demo` | 异步信号与同步等待 | `sigaction`, `raise`, `sigwait` |
 | `epoll-server` | 非阻塞 TCP echo 服务 | `socket`, `epoll_wait`, `accept4` |
 | `mmap-file` | 内存映射文件读写 | `mmap`, `msync`, `munmap` |
+| `stopwatch-qt` | Qt6 图形界面秒表 | `QApplication`, `QTimer`, `QElapsedTimer` |
 
 另有 `test1/hello.c`（最小 Hello World）和 `example-matrix1`（ARM NEON/SVE
 矩阵乘法），后者需要 ARM 工具链和 SVE 支持。
@@ -24,6 +25,7 @@
 ```bash
 make            # 编译全部示例
 make test       # 等同 ./run-all.sh
+make gui        # 编译 Qt6 秒表（需要 qt6-base-dev）
 make clean
 ```
 
@@ -58,3 +60,22 @@ gcc -Wall -Wextra -O2 -D_GNU_SOURCE process-fork/fork_demo.c -o /tmp/fork_demo
 ./epoll-server/epoll_server server 18080
 ./epoll-server/epoll_server client 18080
 ```
+
+## Qt6 图形界面秒表
+
+`stopwatch-qt/` 是 Qt6 Widgets 秒表。Ubuntu rootfs 的 GUI 依赖由
+`type-ubuntu24.04` / `type-ubuntu22.04` 构建脚本自动安装。构建 rootfs 后使用
+`run-qemu.sh --gui`（SDL 窗口）或 `--vnc <display>` 启动图形显示：
+
+```bash
+sudo ./build-rootfs.sh ubuntu24.04 --arch arm64
+./run-qemu.sh rootfs_ubuntu24.04_arm64.ext4 --arch arm64 --gui
+```
+
+登录 guest 后运行：
+
+```bash
+/mnt/linux-app/stopwatch-qt/start-gui.sh
+```
+
+详见 [stopwatch-qt/README.md](stopwatch-qt/README.md)。

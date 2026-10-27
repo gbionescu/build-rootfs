@@ -206,4 +206,72 @@ case " ${QEMU_CMD[*]} " in
     *" -netdev "*) fail "network disabled should not add netdev" ;;
 esac
 
+DISPLAY_MODE="none"
+set_arch_vars arm64
+qemu_boot_command /tmp/rootfs.ext4
+case " ${QEMU_CMD[*]} " in
+    *" -nographic "*) ;;
+    *) fail "default display should use -nographic" ;;
+esac
+case " ${QEMU_CMD[*]} " in
+    *"sve=on"*) ;;
+    *) fail "arm64 should keep SVE enabled" ;;
+esac
+case " ${QEMU_CMD[*]} " in
+    *" virtio-gpu-pci "*) fail "default display should not add a GPU" ;;
+esac
+case " ${QEMU_CMD[*]} " in
+    *" virtio-keyboard-pci "*) fail "default display should not add a keyboard" ;;
+esac
+
+DISPLAY_MODE="sdl"
+set_arch_vars arm64
+qemu_boot_command /tmp/rootfs.ext4
+case " ${QEMU_CMD[*]} " in
+    *" -display sdl "*) ;;
+    *) fail "SDL display should be added" ;;
+esac
+case " ${QEMU_CMD[*]} " in
+    *" virtio-gpu-pci "*) ;;
+    *) fail "SDL mode on arm64 should add virtio-gpu-pci" ;;
+esac
+case " ${QEMU_CMD[*]} " in
+    *" virtio-keyboard-pci "*) ;;
+    *) fail "SDL mode should add virtio-keyboard-pci" ;;
+esac
+case " ${QEMU_CMD[*]} " in
+    *" virtio-tablet-pci "*) ;;
+    *) fail "SDL mode should add virtio-tablet-pci" ;;
+esac
+case " ${QEMU_CMD[*]} " in
+    *" -nographic "*) fail "SDL mode should replace -nographic" ;;
+esac
+
+DISPLAY_MODE="vnc"
+VNC_DISPLAY=3
+set_arch_vars amd64
+qemu_boot_command /tmp/rootfs.ext4
+case " ${QEMU_CMD[*]} " in
+    *" -vnc 127.0.0.1:3 "*) ;;
+    *) fail "VNC should listen on 127.0.0.1:3" ;;
+esac
+case " ${QEMU_CMD[*]} " in
+    *" virtio-gpu-pci "*) ;;
+    *) fail "VNC mode on amd64 should add virtio-gpu-pci" ;;
+esac
+DISPLAY_MODE="none"
+VNC_DISPLAY=1
+
+output=$(./run-qemu.sh --gui --vnc 1 2>&1 || true)
+case "$output" in
+    *"Cannot use --gui and --vnc together"*) ;;
+    *) fail "--gui and --vnc should be rejected together" ;;
+esac
+
+output=$(./run-qemu.sh --vnc 100 2>&1 || true)
+case "$output" in
+    *"Invalid VNC display: 100"*) ;;
+    *) fail "invalid VNC display should be rejected" ;;
+esac
+
 echo "All architecture tests passed"

@@ -48,7 +48,7 @@ expect {
     "# " {}
     timeout { puts "TIMEOUT waiting for shell"; exit 1 }
 }
-send "for i in \$(seq 1 120); do ip -4 addr show eth0 2>/dev/null | grep -q 'inet ' && break; sleep 1; done; ok=1; for c in git ping gcc vim apt-get netstat sudo ethtool ssh udhcpc; do command -v \$c >/dev/null || { echo MISSING:\$c; ok=0; }; done; gcc /mnt/linux-app/test1/hello.c -o /tmp/hello || ok=0; /tmp/hello | grep -q 'Hello World' || ok=0; ping -c 1 -W 2 10.0.2.2 >/dev/null || ok=0; apt-get update -qq || ok=0; systemctl is-active --quiet ssh || ok=0; \[ \"\$ok\" = 1 \] && echo TOOLS_PASS || echo TOOLS_FAIL\r"
+send "for i in \$(seq 1 120); do ip -4 addr show eth0 2>/dev/null | grep -q 'inet ' && break; sleep 1; done; ok=1; for c in git ping gcc g++ make pkg-config vim apt-get netstat sudo ethtool ssh udhcpc; do command -v \$c >/dev/null || { echo MISSING:\$c; ok=0; }; done; gcc /mnt/linux-app/test1/hello.c -o /tmp/hello || ok=0; /tmp/hello | grep -q 'Hello World' || ok=0; ping -c 1 -W 2 10.0.2.2 >/dev/null || ok=0; apt-get update -qq || ok=0; systemctl is-active --quiet ssh || ok=0; \[ \"\$ok\" = 1 \] && echo TOOLS_PASS || echo TOOLS_FAIL\r"
 expect {
     "TOOLS_PASS" { puts "Tools test passed" }
     timeout { puts "TOOLS_TEST_FAIL"; exit 1 }

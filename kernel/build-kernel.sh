@@ -27,6 +27,8 @@ case "$ARCH" in
             DEVTMPFS DEVTMPFS_MOUNT
             SERIAL_AMBA_PL011 SERIAL_AMBA_PL011_CONSOLE
             NET_9P NET_9P_VIRTIO 9P_FS
+            DRM DRM_VIRTIO_GPU DRM_FBDEV_EMULATION
+            VIRTIO_INPUT INPUT_EVDEV
         )
         ;;
     arm32)
@@ -41,6 +43,8 @@ case "$ARCH" in
             DEVTMPFS DEVTMPFS_MOUNT
             SERIAL_AMBA_PL011 SERIAL_AMBA_PL011_CONSOLE
             NET_9P NET_9P_VIRTIO 9P_FS
+            DRM DRM_VIRTIO_GPU DRM_FBDEV_EMULATION
+            VIRTIO_INPUT INPUT_EVDEV
         )
         ;;
     riscv64)
@@ -55,6 +59,8 @@ case "$ARCH" in
             DEVTMPFS DEVTMPFS_MOUNT
             SERIAL_8250 SERIAL_8250_CONSOLE SERIAL_8250_DW
             NET_9P NET_9P_VIRTIO 9P_FS
+            DRM DRM_VIRTIO_GPU DRM_FBDEV_EMULATION
+            VIRTIO_INPUT INPUT_EVDEV
         )
         ;;
     *)

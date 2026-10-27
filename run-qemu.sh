@@ -19,6 +19,8 @@ Options:
       --no-share       Disable the default ./linux-app share
       --no-net         Disable QEMU user-mode networking
       --ssh-port <p>   SSH host forward port on 127.0.0.1 (default: 2222)
+      --gui            Show a QEMU SDL window (needs DISPLAY)
+      --vnc <display>  Serve VNC on 127.0.0.1:<display> (port 5900+display)
   -h, --help           Show this help
 EOF
 }
@@ -87,6 +89,32 @@ while [[ $# -gt 0 ]]; do
             SSH_PORT="${1#*=}"
             shift
             ;;
+        --gui)
+            if [[ "$DISPLAY_MODE" == "vnc" ]]; then
+                echo "Cannot use --gui and --vnc together"
+                exit 1
+            fi
+            DISPLAY_MODE=sdl
+            shift
+            ;;
+        --vnc)
+            if [[ "$DISPLAY_MODE" == "sdl" ]]; then
+                echo "Cannot use --gui and --vnc together"
+                exit 1
+            fi
+            DISPLAY_MODE=vnc
+            VNC_DISPLAY="${2:?Missing value for $1}"
+            shift 2
+            ;;
+        --vnc=*)
+            if [[ "$DISPLAY_MODE" == "sdl" ]]; then
+                echo "Cannot use --gui and --vnc together"
+                exit 1
+            fi
+            DISPLAY_MODE=vnc
+            VNC_DISPLAY="${1#*=}"
+            shift
+            ;;
         -*)
             echo "Unknown option: $1"
             usage
@@ -108,6 +136,24 @@ done
 if ! set_arch_vars "$ARCH_INPUT"; then
     echo "Unknown architecture: $ARCH_INPUT. Try one of: $VALID_ARCHS"
     exit 1
+fi
+
+if [[ "$DISPLAY_MODE" == "sdl" ]]; then
+    if [[ -z "${DISPLAY:-}" && -z "${WAYLAND_DISPLAY:-}" ]]; then
+        echo "SDL display requested but DISPLAY is not set."
+        echo "Use --vnc <display> for VNC output, or enable X11/Wayland."
+        exit 1
+    fi
+    if [[ -n "${SUDO_USER:-}" || $EUID -eq 0 ]]; then
+        echo "Warning: --gui is running as root (or via sudo)." >&2
+        echo "The SDL window may not attach to your desktop session." >&2
+        echo "Use --vnc <display> or run this script without sudo." >&2
+    fi
+elif [[ "$DISPLAY_MODE" == "vnc" ]]; then
+    if ! [[ "$VNC_DISPLAY" =~ ^[0-9]+$ ]] || (( VNC_DISPLAY > 99 )); then
+        echo "Invalid VNC display: $VNC_DISPLAY"
+        exit 1
+    fi
 fi
 
 if [[ -n "$ROOTFS_OVERRIDE" && -n "$IMAGE" ]]; then

@@ -60,6 +60,9 @@ Notes:
 - Ubuntu images include `git`, `gcc`, `vim`, `sudo`, `ethtool`, `ping`,
   `net-tools`, OpenSSH, `udhcpc`, and `apt`, so they can be used as small
   development guests.
+- Ubuntu 22.04 and 24.04 also include Qt6 development files, `g++`, `make`,
+  Xorg, `xinit`, and `openbox`, so the Qt6 GUI example can be built and run
+  inside the guest.
 
 ## Building a kernel
 
@@ -116,6 +119,8 @@ Available options:
 | `--no-share` | Disable the default `./linux-app` share |
 | `--no-net` | Disable QEMU user-mode networking |
 | `--ssh-port <port>` | SSH host forward port on `127.0.0.1` (default: `2222`) |
+| `--gui` | Show a QEMU SDL window (adds a virtio-gpu device) |
+| `--vnc <display>` | Serve VNC on `127.0.0.1:<display>` (`5900+display`) |
 | `-h, --help` | Show help |
 
 Examples:
@@ -128,19 +133,44 @@ Examples:
 ./run-qemu.sh --arch riscv64 --kernel /path/to/Image-6.1.22-riscv64
 ./run-qemu.sh --rootfs /tmp/rootfs.ext4 --kernel /tmp/bzImage
 ./run-qemu.sh --arch arm64 --rootfs /tmp/rootfs.ext4 --kernel /tmp/bzImage
+./run-qemu.sh --arch arm64 --gui
+./run-qemu.sh --arch arm64 --vnc 1
 ```
 
 Images built with `build-rootfs.sh -o <path>` are not at the default location;
 pass them with `--rootfs <path>` or as the positional argument.
 
 This starts a QEMU instance with:
-- no KVM or graphics
+- no KVM
 - 1GB of RAM
 - 1 CPU (default)
 - serial console in the terminal
 - user-mode networking with DHCP on `eth0`
 - SSH forwarded to `127.0.0.1:2222`
 - the default kernel image for the selected architecture
+
+By default QEMU runs with `-nographic`. `--gui` adds a virtio-gpu device and
+opens an SDL window, while `--vnc <display>` serves the same display through VNC
+on `127.0.0.1:<5900+display>`. GUI mode also adds a virtio keyboard and an
+absolute pointer (tablet), so Xorg receives keyboard and mouse input without USB
+passthrough. The serial console remains attached to the terminal in both cases.
+For VNC, tunnel the port first:
+
+```bash
+ssh -L 5901:127.0.0.1:5901 <host>
+```
+
+Then connect a VNC client to `127.0.0.1:5901`:
+
+```bash
+vncviewer 127.0.0.1:5901
+```
+
+`run-qemu.sh` itself does not need root, but images created by `build-rootfs.sh`
+are root-owned. Either `chown` the image to your user or run with `sudo`. `--gui`
+opens the window on the X/Wayland session of the invoking user, so a window
+started via `sudo` on a remote machine will not be visible. Use `--vnc` in that
+case.
 
 Emulated architectures boot much more slowly than amd64; allow several minutes for
 the first boot.
@@ -166,6 +196,25 @@ to disable sharing:
 
 Images built before the 9p auto-mount change must be rebuilt to get the
 `/etc/fstab` entry.
+
+## GUI example
+
+`linux-app/stopwatch-qt` is a Qt6 Widgets stopwatch. Rebuild an Ubuntu rootfs
+(the build scripts install Qt6, Xorg, and xinit), then boot it with a display:
+
+```bash
+sudo ./build-rootfs.sh ubuntu24.04 --arch arm64
+./run-qemu.sh rootfs_ubuntu24.04_arm64.ext4 --arch arm64 --gui
+```
+
+Log in on the serial console and start Xorg plus the stopwatch:
+
+```bash
+/mnt/linux-app/stopwatch-qt/start-gui.sh
+```
+
+See [linux-app/stopwatch-qt/README.md](linux-app/stopwatch-qt/README.md) for
+details and the VNC variant.
 
 ## Customizing the build process
 

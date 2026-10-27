@@ -36,6 +36,12 @@ arm32, and riscv64 configurations force virtio-mmio, virtio-blk, virtio-net, ext
 devtmpfs, and the serial console driver to be built in so the resulting images boot
 under QEMU `virt` machines with virtio-blk disks and user-mode networking.
 
+DRM and virtio-gpu are also built in for the non-amd64 kernels, so
+`run-qemu.sh --gui` and `--vnc` can provide a graphical display for Qt/Xorg
+applications. `VIRTIO_INPUT` and `INPUT_EVDEV` are enabled so the virtio
+keyboard and tablet show up as `/dev/input/event*` devices. The amd64 `.config`
+already enables `CONFIG_DRM_VIRTIO_GPU`.
+
 9p (`NET_9P`, `NET_9P_VIRTIO`, `9P_FS`) is also built in for every architecture,
 so the guest can mount QEMU 9p shares.
 

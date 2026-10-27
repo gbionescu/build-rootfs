@@ -18,7 +18,20 @@ DEBIAN_FRONTEND="noninteractive" apt-get install -y \
       apt \
       ca-certificates \
       iproute2 \
-      strace
+      strace \
+      qt6-base-dev \
+      g++ \
+      make \
+      pkg-config \
+      xserver-xorg-core \
+      xserver-xorg-input-libinput \
+      xinit \
+      xauth \
+      x11-utils \
+      libxcb-cursor0 \
+      openbox \
+      fonts-dejavu-core \
+      libgl1-mesa-dri
 
 # Enable SSH
 echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
@@ -50,8 +63,10 @@ EOF
 
 systemctl enable udhcpc.service
 
-# Enable the serial console; it starts on boot
-systemctl enable "getty@${SERIAL_CONSOLE}"
+# Enable the serial console; use serial-getty@ and drop the plain getty@
+# symlink so the auto-generated serial unit does not fight with it.
+systemctl enable "serial-getty@${SERIAL_CONSOLE}"
+systemctl disable "getty@${SERIAL_CONSOLE}" 2>/dev/null || true
 
 # Mount the host linux-app share on first access
 mkdir -p /mnt/linux-app

@@ -1,4 +1,5 @@
 SUBDIRS := process-fork pthread-sum pipe-ipc shm-sem signal-demo epoll-server mmap-file
+GUI_DIR := stopwatch-qt
 
 all:
 	@for dir in $(SUBDIRS); do \
@@ -9,9 +10,13 @@ all:
 test:
 	./run-all.sh
 
+gui:
+	$(MAKE) -C $(GUI_DIR)
+
 clean:
 	@for dir in $(SUBDIRS); do \
 		$(MAKE) -C $$dir clean; \
 	done
+	$(MAKE) -C $(GUI_DIR) clean
 
-.PHONY: all test clean
+.PHONY: all test gui clean

@@ -14,6 +14,9 @@ NET_ENABLED=0
 NET_BACKEND="user"
 SSH_PORT=2222
 
+DISPLAY_MODE="none"
+VNC_DISPLAY=1
+
 normalize_arch() {
     case "$1" in
         ""|amd64|x86_64) echo "amd64" ;;
@@ -75,30 +78,66 @@ set_arch_vars() {
     fi
 }
 
+qemu_display_args() {
+    QEMU_DISPLAY_ARGS=()
+
+    if [[ "$DISPLAY_MODE" == "none" ]]; then
+        QEMU_DISPLAY_ARGS=(-nographic)
+        return
+    fi
+
+    QEMU_DISPLAY_ARGS=(-serial mon:stdio)
+
+    case "$DISPLAY_MODE" in
+        sdl)
+            QEMU_DISPLAY_ARGS+=(-display sdl)
+            ;;
+        vnc)
+            QEMU_DISPLAY_ARGS+=(-vnc "127.0.0.1:$VNC_DISPLAY")
+            ;;
+    esac
+
+    if [[ "$ARCH" == "amd64" ]]; then
+        # x86 machines already provide a PS/2 keyboard and mouse.
+        QEMU_DISPLAY_ARGS+=(-vga none -device virtio-gpu-pci)
+    else
+        # ARM/riscv virt machines have no default input devices.
+        QEMU_DISPLAY_ARGS+=(-device virtio-gpu-pci
+                            -device virtio-keyboard-pci
+                            -device virtio-tablet-pci)
+    fi
+}
+
 qemu_boot_command() {
     local image="$1"
+    qemu_display_args
+
     case "$ARCH" in
         amd64)
             QEMU_CMD=("$QEMU_BIN" -kernel "$KERNEL_IMAGE"
+                      "${QEMU_DISPLAY_ARGS[@]}"
                       -append "console=$SERIAL_CONSOLE root=$ROOT_DEVICE rw net.ifnames=0 earlyprintk=serial"
-                      -nographic -m 1G -hda "$image")
+                      -m 1G -hda "$image")
             ;;
         arm64)
-            QEMU_CMD=("$QEMU_BIN" -cpu max,sve=on,sve256=on -M virt,gic-version=3,its=on,iommu=smmuv3,mte=on -m 1G -nographic
+            QEMU_CMD=("$QEMU_BIN" -cpu max,sve=on,sve256=on -M virt,gic-version=3,its=on,iommu=smmuv3,mte=on -m 1G
+                      "${QEMU_DISPLAY_ARGS[@]}"
                       -kernel "$KERNEL_IMAGE"
                       -append "console=$SERIAL_CONSOLE root=$ROOT_DEVICE rw rootwait net.ifnames=0 earlyprintk"
                       -drive "file=$image,format=raw,if=none,id=hd0"
                       -device virtio-blk-device,drive=hd0)
             ;;
         arm32)
-            QEMU_CMD=("$QEMU_BIN" -M virt -cpu cortex-a15 -m 1G -nographic
+            QEMU_CMD=("$QEMU_BIN" -M virt -cpu cortex-a15 -m 1G
+                      "${QEMU_DISPLAY_ARGS[@]}"
                       -kernel "$KERNEL_IMAGE"
                       -append "console=$SERIAL_CONSOLE root=$ROOT_DEVICE rw rootwait net.ifnames=0 earlyprintk"
                       -drive "file=$image,format=raw,if=none,id=hd0"
                       -device virtio-blk-device,drive=hd0)
             ;;
         riscv64)
-            QEMU_CMD=("$QEMU_BIN" -M virt -m 1G -nographic -bios default
+            QEMU_CMD=("$QEMU_BIN" -M virt -m 1G -bios default
+                      "${QEMU_DISPLAY_ARGS[@]}"
                       -kernel "$KERNEL_IMAGE"
                       -append "console=$SERIAL_CONSOLE root=$ROOT_DEVICE rw rootwait net.ifnames=0 earlyprintk"
                       -drive "file=$image,format=raw,if=none,id=hd0"

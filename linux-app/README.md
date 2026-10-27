@@ -1,8 +1,8 @@
 # linux-app demos
 
 这个目录默认通过 QEMU 9p 共享到 guest 的 `/mnt/linux-app`，用于演示 Linux
-应用层开发中的关键技术。所有示例都是自校验的：退出码为 0 表示检查通过，并打印
-`PASS`。
+应用层开发中的关键技术。命令行示例都是自校验的：退出码为 0 表示检查通过，并打印
+`PASS`；GUI 示例见各自目录的 README。
 
 ## 示例
 
@@ -16,6 +16,7 @@
 | `epoll-server` | 非阻塞 TCP echo 服务 | `socket`, `epoll_wait`, `accept4` |
 | `mmap-file` | 内存映射文件读写 | `mmap`, `msync`, `munmap` |
 | `stopwatch-qt` | Qt6 图形界面秒表 | `QApplication`, `QTimer`, `QElapsedTimer` |
+| `snake-tk` | Python/Tkinter 贪吃蛇 | `tkinter.Canvas`, `after`, 键盘事件 |
 
 另有 `test1/hello.c`（最小 Hello World）和 `example-matrix1`（ARM NEON/SVE
 矩阵乘法），后者需要 ARM 工具链和 SVE 支持。
@@ -79,3 +80,27 @@ sudo ./build-rootfs.sh ubuntu24.04 --arch arm64
 ```
 
 详见 [stopwatch-qt/README.md](stopwatch-qt/README.md)。
+
+## Python/Tkinter 贪吃蛇
+
+`snake-tk/` 使用 Python 标准库 Tkinter 实现贪吃蛇。Ubuntu rootfs 的
+`python3-tk` 依赖由构建脚本自动安装；已有镜像可手动执行
+`apt-get install -y python3-tk`。在 guest 的图形环境中运行：
+
+```bash
+/mnt/linux-app/snake-tk/start-snake.sh
+```
+
+如果 Xorg 已在运行，也可以直接复用当前显示：
+
+```bash
+DISPLAY=:0 python3 /mnt/linux-app/snake-tk/snake.py
+```
+
+逻辑单元测试不依赖显示器：
+
+```bash
+cd snake-tk && python3 -m unittest -v test_snake.py
+```
+
+详见 [snake-tk/README.md](snake-tk/README.md)。

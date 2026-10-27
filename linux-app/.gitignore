@@ -6,3 +6,6 @@ signal-demo/signal_demo
 epoll-server/epoll_server
 mmap-file/mmap_file
 example-matrix1/matrix_4x4
+
+__pycache__/
+*.pyc

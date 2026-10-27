@@ -23,6 +23,7 @@ DEBIAN_FRONTEND="noninteractive" apt-get install -y \
       g++ \
       make \
       pkg-config \
+      python3-tk \
       xserver-xorg-core \
       xserver-xorg-input-libinput \
       xinit \

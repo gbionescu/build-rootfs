@@ -214,7 +214,8 @@ Log in on the serial console and start Xorg plus the stopwatch:
 ```
 
 See [linux-app/stopwatch-qt/README.md](linux-app/stopwatch-qt/README.md) for
-details and the VNC variant.
+details and the VNC variant. A Python/Tkinter snake game is available in
+[linux-app/snake-tk](linux-app/snake-tk/README.md).
 
 ## Customizing the build process
 
@@ -257,5 +258,17 @@ To run the amd64 tests, simply run:
 
 ## Troubleshooting
 
-- Need a larger image? Change `init-rootfs.sh`.
+- Need a larger image? Change `init-rootfs.sh`; Ubuntu images now default to
+  2048M because Qt6/Xorg use a significant amount of space.
 - Need to install more packages? Change `inside-container.sh`.
+- If an older 1.5G image reports `No space left` in `/var/cache/apt/archives`,
+  power it off and grow the filesystem on the host:
+
+  ```bash
+  sudo truncate -s 2048M rootfs_arm64.ext4
+  sudo e2fsck -f rootfs_arm64.ext4
+  sudo resize2fs rootfs_arm64.ext4
+  ```
+
+  Alternatively, free space inside the guest with
+  `sudo journalctl --vacuum-size=8M` and `sudo apt clean`.

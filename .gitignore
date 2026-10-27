@@ -2,3 +2,4 @@
 *.log
 kernel/linux-*/
 kernel/linux-*.tar.xz
+*.ext4.orig

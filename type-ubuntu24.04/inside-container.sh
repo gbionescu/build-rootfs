@@ -24,6 +24,7 @@ DEBIAN_FRONTEND="noninteractive" apt-get install -y \
       make \
       pkg-config \
       python3-tk \
+      kmod \
       xserver-xorg-core \
       xserver-xorg-input-libinput \
       xinit \

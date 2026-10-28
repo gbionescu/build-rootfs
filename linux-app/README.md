@@ -19,6 +19,7 @@
 | `snake-tk` | Python/Tkinter 贪吃蛇 | `tkinter.Canvas`, `after`, 键盘事件 |
 | `kernel-perf` | perf_event_open 计数器 | `perf_event_open`, `PERF_EVENT_IOC_*` |
 | `kernel-trace` | ftrace/tracefs 跟踪 | `function_graph`, tracepoint, kprobe |
+| `kernel-drivers` | 虚拟字符/块/网络设备 | misc device, blk-mq, net_device |
 
 另有 `test1/hello.c`（最小 Hello World）和 `example-matrix1`（ARM NEON/SVE
 矩阵乘法），后者需要 ARM 工具链和 SVE 支持。
@@ -132,3 +133,22 @@ sudo ./kernel-trace/trace_demo.sh all
 ```
 
 这两个示例需要 root 和目标内核特性，因此没有加入 `run-all.sh`。
+
+## kernel 虚拟设备驱动
+
+`kernel-drivers/` 包含三个外部内核模块：
+
+- `char/vchar`：misc 字符设备 `/dev/vchar`，4KB 缓冲区，read/write/ioctl。
+- `block/vblk`：16 MiB 内存后端 blk-mq 块设备 `/dev/vblk0`。
+- `net/vnet`：veth 风格 `vnet0`/`vnet1` 设备对，支持 netns 内 ping。
+
+构建（默认 arm64）并使用 `kmod` 的 `insmod` 加载：
+
+```bash
+./kernel-drivers/build.sh arm64
+sudo ./kernel-drivers/char/test_vchar.sh
+sudo ./kernel-drivers/block/test_vblk.sh
+sudo ./kernel-drivers/net/test_vnet.sh
+```
+
+模块是 out-of-tree 构建，不修改内核镜像；rootfs 构建脚本已加入 `kmod`。

@@ -13,10 +13,16 @@ test:
 gui:
 	$(MAKE) -C $(GUI_DIR)
 
+modules:
+	./kernel-drivers/build.sh
+
+modules-clean:
+	./kernel-drivers/build.sh clean
+
 clean:
 	@for dir in $(SUBDIRS); do \
 		$(MAKE) -C $$dir clean; \
 	done
 	$(MAKE) -C $(GUI_DIR) clean
 
-.PHONY: all test gui clean
+.PHONY: all test gui modules modules-clean clean

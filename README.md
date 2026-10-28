@@ -225,6 +225,11 @@ kprobes through tracefs. Both need the rebuilt kernels and root inside the
 guest. See [linux-app/kernel-perf/README.md](linux-app/kernel-perf/README.md)
 and [linux-app/kernel-trace/README.md](linux-app/kernel-trace/README.md).
 
+`linux-app/kernel-drivers` provides out-of-tree virtual character, block, and
+network device modules. Build them with `linux-app/kernel-drivers/build.sh
+arm64`; load and test them inside the guest with the scripts in each subdirectory.
+See [linux-app/kernel-drivers/README.md](linux-app/kernel-drivers/README.md).
+
 ## Customizing the build process
 
 Each rootfs generator consists of 3 files:

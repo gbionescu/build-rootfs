@@ -11,3 +11,10 @@ __pycache__/
 *.pyc
 kernel-perf/perf_counter
 kernel-trace/trace_workload
+*.ko
+*.o
+*.mod
+*.mod.c
+modules.order
+Module.symvers
+.*.cmd

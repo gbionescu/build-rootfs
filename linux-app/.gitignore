@@ -9,3 +9,5 @@ example-matrix1/matrix_4x4
 
 __pycache__/
 *.pyc
+kernel-perf/perf_counter
+kernel-trace/trace_workload

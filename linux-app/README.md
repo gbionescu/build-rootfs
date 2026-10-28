@@ -17,6 +17,8 @@
 | `mmap-file` | 内存映射文件读写 | `mmap`, `msync`, `munmap` |
 | `stopwatch-qt` | Qt6 图形界面秒表 | `QApplication`, `QTimer`, `QElapsedTimer` |
 | `snake-tk` | Python/Tkinter 贪吃蛇 | `tkinter.Canvas`, `after`, 键盘事件 |
+| `kernel-perf` | perf_event_open 计数器 | `perf_event_open`, `PERF_EVENT_IOC_*` |
+| `kernel-trace` | ftrace/tracefs 跟踪 | `function_graph`, tracepoint, kprobe |
 
 另有 `test1/hello.c`（最小 Hello World）和 `example-matrix1`（ARM NEON/SVE
 矩阵乘法），后者需要 ARM 工具链和 SVE 支持。
@@ -104,3 +106,29 @@ cd snake-tk && python3 -m unittest -v test_snake.py
 ```
 
 详见 [snake-tk/README.md](snake-tk/README.md)。
+
+## kernel perf 示例
+
+`kernel-perf/` 直接调用 `perf_event_open(2)` 统计软件/硬件事件，不依赖
+`perf` 命令。需要 root 或降低 `kernel.perf_event_paranoid`：
+
+```bash
+make -C kernel-perf
+sudo ./kernel-perf/perf_counter all 500
+sudo ./kernel-perf/perf_counter cpu 1000
+```
+
+硬件 PMU 在 QEMU TCG 下可能不可用，程序会跳过并继续统计软件事件。
+
+## kernel trace 示例
+
+`kernel-trace/` 通过 tracefs 演示 `function_graph`、`sched` tracepoint 和
+kprobe，需要内核开启 tracing 配置并重新构建（本仓库 `build-kernel.sh` 已
+开启）。在 guest 内以 root 运行：
+
+```bash
+make -C kernel-trace
+sudo ./kernel-trace/trace_demo.sh all
+```
+
+这两个示例需要 root 和目标内核特性，因此没有加入 `run-all.sh`。

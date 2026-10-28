@@ -1,4 +1,4 @@
-SUBDIRS := process-fork pthread-sum pipe-ipc shm-sem signal-demo epoll-server mmap-file
+SUBDIRS := process-fork pthread-sum pipe-ipc shm-sem signal-demo epoll-server mmap-file kernel-perf kernel-trace
 GUI_DIR := stopwatch-qt
 
 all:

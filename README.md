@@ -217,6 +217,14 @@ See [linux-app/stopwatch-qt/README.md](linux-app/stopwatch-qt/README.md) for
 details and the VNC variant. A Python/Tkinter snake game is available in
 [linux-app/snake-tk](linux-app/snake-tk/README.md).
 
+## Kernel perf and trace examples
+
+`linux-app/kernel-perf` counts events with `perf_event_open(2)`, and
+`linux-app/kernel-trace` demonstrates ftrace function_graph, tracepoints, and
+kprobes through tracefs. Both need the rebuilt kernels and root inside the
+guest. See [linux-app/kernel-perf/README.md](linux-app/kernel-perf/README.md)
+and [linux-app/kernel-trace/README.md](linux-app/kernel-trace/README.md).
+
 ## Customizing the build process
 
 Each rootfs generator consists of 3 files:

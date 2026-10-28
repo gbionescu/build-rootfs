@@ -5,6 +5,11 @@ SCRIPT_DIR="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 KERNEL_VERSION="6.1.22"
 ARCH="${1:-amd64}"
 
+TRACE_CONFIG=(
+    FTRACE FUNCTION_TRACER FUNCTION_GRAPH_TRACER FTRACE_SYSCALLS
+    KPROBES KPROBE_EVENTS TRACEPOINTS TRACING
+)
+
 case "$ARCH" in
     amd64)
         MAKE_ARCH=x86
@@ -13,7 +18,7 @@ case "$ARCH" in
         CONFIG_FILE="$SCRIPT_DIR/.config"
         KERNEL_PATH="arch/x86/boot/bzImage"
         OUTPUT="$SCRIPT_DIR/bzImage-$KERNEL_VERSION"
-        EXTRA_CONFIG=()
+        EXTRA_CONFIG=("${TRACE_CONFIG[@]}")
         ;;
     arm64)
         MAKE_ARCH=arm64
@@ -29,6 +34,7 @@ case "$ARCH" in
             NET_9P NET_9P_VIRTIO 9P_FS
             DRM DRM_VIRTIO_GPU DRM_FBDEV_EMULATION
             VIRTIO_INPUT INPUT_EVDEV
+            "${TRACE_CONFIG[@]}"
         )
         ;;
     arm32)
@@ -45,6 +51,7 @@ case "$ARCH" in
             NET_9P NET_9P_VIRTIO 9P_FS
             DRM DRM_VIRTIO_GPU DRM_FBDEV_EMULATION
             VIRTIO_INPUT INPUT_EVDEV
+            "${TRACE_CONFIG[@]}"
         )
         ;;
     riscv64)
@@ -61,6 +68,7 @@ case "$ARCH" in
             NET_9P NET_9P_VIRTIO 9P_FS
             DRM DRM_VIRTIO_GPU DRM_FBDEV_EMULATION
             VIRTIO_INPUT INPUT_EVDEV
+            "${TRACE_CONFIG[@]}"
         )
         ;;
     *)
@@ -82,12 +90,14 @@ if [ "$ARCH" = "amd64" ]; then
     cp "$CONFIG_FILE" .config
 else
     make ARCH="$MAKE_ARCH" CROSS_COMPILE="$CROSS_COMPILE" "$DEFCONFIG"
-    for option in "${EXTRA_CONFIG[@]}"; do
-        scripts/config --enable "$option"
-    done
-    make ARCH="$MAKE_ARCH" CROSS_COMPILE="$CROSS_COMPILE" olddefconfig
-    cp .config "$CONFIG_FILE"
 fi
+
+for option in "${EXTRA_CONFIG[@]}"; do
+    scripts/config --enable "$option"
+done
+scripts/config --disable WERROR
+make ARCH="$MAKE_ARCH" CROSS_COMPILE="$CROSS_COMPILE" olddefconfig
+cp .config "$CONFIG_FILE"
 
 make -j"$(nproc)" ARCH="$MAKE_ARCH" CROSS_COMPILE="$CROSS_COMPILE"
 cp "$KERNEL_PATH" "$OUTPUT"

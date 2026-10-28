@@ -42,6 +42,10 @@ applications. `VIRTIO_INPUT` and `INPUT_EVDEV` are enabled so the virtio
 keyboard and tablet show up as `/dev/input/event*` devices. The amd64 `.config`
 already enables `CONFIG_DRM_VIRTIO_GPU`.
 
+All kernels also enable `FTRACE`, `FUNCTION_TRACER`, `FUNCTION_GRAPH_TRACER`,
+`FTRACE_SYSCALLS`, `KPROBES`, and `KPROBE_EVENTS` for the `linux-app/kernel-trace`
+examples.
+
 9p (`NET_9P`, `NET_9P_VIRTIO`, `9P_FS`) is also built in for every architecture,
 so the guest can mount QEMU 9p shares.
 

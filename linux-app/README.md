@@ -17,12 +17,37 @@
 | `mmap-file` | 内存映射文件读写 | `mmap`, `msync`, `munmap` |
 | `stopwatch-qt` | Qt6 图形界面秒表 | `QApplication`, `QTimer`, `QElapsedTimer` |
 | `snake-tk` | Python/Tkinter 贪吃蛇 | `tkinter.Canvas`, `after`, 键盘事件 |
-| `kernel-perf` | perf_event_open 计数器 | `perf_event_open`, `PERF_EVENT_IOC_*` |
-| `kernel-trace` | ftrace/tracefs 跟踪 | `function_graph`, tracepoint, kprobe |
+| `kernel-perf` | 8 种 perf_event_open 用法 | 计数、分组、采样、tracepoint、kprobe/uprobe、PID/CPU |
+| `kernel-trace` | 11 种 ftrace/tracefs 用法 | function_graph、tracepoint、kprobe/uprobe、hist/synthetic、snapshot、instance、trace_pipe |
+| `ebpf` | 9 种裸 bpf(2) 用法 | map、socket filter、kprobe、tracepoint、uprobe、trace_printk、perf_event_output、verifier |
+| `common/elf_symbol.h` | ELF 符号到文件偏移 | PIE/非 PIE、32/64 位符号表解析 |
 | `kernel-drivers` | 虚拟字符/块/网络设备 | misc device, blk-mq, net_device |
 
 另有 `test1/hello.c`（最小 Hello World）和 `example-matrix1`（ARM NEON/SVE
 矩阵乘法），后者需要 ARM 工具链和 SVE 支持。
+
+## perf / trace / eBPF 方面对照
+
+| 方面 | perf (`kernel-perf`) | trace (`kernel-trace`) | eBPF (`ebpf`) |
+|------|----------------------|------------------------|----------------|
+| 基础计数/聚合 | `stat`, `group` | — | `map`, `counter` |
+| 采样/事件输出 | `sample`, `pid`, `cpu` | — | `perf-output` |
+| tracepoint | `tracepoint` | `event`, `syscall` | `tracepoint` |
+| kprobe | `kprobe` | `kprobe` | `kprobe` |
+| uprobe | `uprobe` | `uprobe` | `uprobe` |
+| 过滤/直方图/合成事件 | — | `hist`, `synthetic` | — |
+| 函数图/调用栈 | `sample` callchain | `function`, `stacktrace` | `trace-printk` |
+| 快照/实例/实时流 | — | `snapshot`, `instance`, `pipe` | — |
+| socket/网络 | — | — | `socket` |
+| verifier/程序安全 | — | — | `verifier` |
+
+三个套件都需要 root；分别运行：
+
+```bash
+sudo ./kernel-perf/run_perf.sh all
+sudo ./kernel-trace/trace_demo.sh all
+sudo ./ebpf/run_ebpf.sh all
+```
 
 ## 在宿主机构建
 
@@ -108,31 +133,54 @@ cd snake-tk && python3 -m unittest -v test_snake.py
 
 详见 [snake-tk/README.md](snake-tk/README.md)。
 
+## eBPF 示例
+
+`ebpf/` 直接调用 `bpf(2)` 并手写 eBPF 指令，不依赖 clang/libbpf/BCC/bpftrace，
+覆盖 map、socket filter、kprobe、tracepoint、uprobe、`bpf_trace_printk`、
+`bpf_perf_event_output` 和 verifier。需要 root；tracing 模式还需要 tracefs：
+
+```bash
+make -C ebpf
+sudo ./ebpf/run_ebpf.sh all
+sudo ./ebpf/ebpf_demo kprobe
+```
+
+当前内核已包含所需 BPF 配置，无需 BTF，也不需要重建内核。详见
+[ebpf/README.md](ebpf/README.md)。
+
 ## kernel perf 示例
 
-`kernel-perf/` 直接调用 `perf_event_open(2)` 统计软件/硬件事件，不依赖
-`perf` 命令。需要 root 或降低 `kernel.perf_event_paranoid`：
+`kernel-perf/` 直接调用 `perf_event_open(2)`，覆盖计数、分组、采样、
+tracepoint、kprobe、uprobe、按 PID 和按 CPU 统计，不依赖 `perf` 命令。
+需要 root 或降低 `kernel.perf_event_paranoid`：
 
 ```bash
 make -C kernel-perf
-sudo ./kernel-perf/perf_counter all 500
-sudo ./kernel-perf/perf_counter cpu 1000
+sudo ./kernel-perf/run_perf.sh all
+sudo ./kernel-perf/perf_demo stat 500
+sudo ./kernel-perf/perf_demo sample 500
 ```
 
-硬件 PMU 在 QEMU TCG 下可能不可用，程序会跳过并继续统计软件事件。
+硬件 PMU 在 QEMU TCG 下可能不可用，`stat` 会跳过硬件事件并继续统计软件事件。
+uprobe 通过 `common/elf_symbol.h` 解析自身符号，不需要 `nm`。详见
+[kernel-perf/README.md](kernel-perf/README.md)。
 
 ## kernel trace 示例
 
-`kernel-trace/` 通过 tracefs 演示 `function_graph`、`sched` tracepoint 和
-kprobe，需要内核开启 tracing 配置并重新构建（本仓库 `build-kernel.sh` 已
-开启）。在 guest 内以 root 运行：
+`kernel-trace/` 通过 tracefs 演示 11 种用法：`function_graph`、tracepoint
+过滤器、syscall 过滤、kprobe/kretprobe、uprobe/uretprobe、hist trigger、
+synthetic event、snapshot、instance、`trace_pipe` 和 stacktrace。需要内核开启
+相应 tracing 配置并重新构建（本仓库 `build-kernel.sh` 已开启）。在 guest 内
+以 root 运行：
 
 ```bash
 make -C kernel-trace
 sudo ./kernel-trace/trace_demo.sh all
 ```
 
-这两个示例需要 root 和目标内核特性，因此没有加入 `run-all.sh`。
+也可以从 `linux-app` 目录运行 `make test-perf` / `make test-trace` / `make test-ebpf`。这几个
+示例需要 root 和目标内核特性，因此没有加入 `run-all.sh`；旧内核缺少的特性会
+显示 `SKIP`。详见 [kernel-trace/README.md](kernel-trace/README.md)。
 
 ## kernel 虚拟设备驱动
 

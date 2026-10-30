@@ -219,11 +219,21 @@ details and the VNC variant. A Python/Tkinter snake game is available in
 
 ## Kernel perf and trace examples
 
-`linux-app/kernel-perf` counts events with `perf_event_open(2)`, and
-`linux-app/kernel-trace` demonstrates ftrace function_graph, tracepoints, and
-kprobes through tracefs. Both need the rebuilt kernels and root inside the
-guest. See [linux-app/kernel-perf/README.md](linux-app/kernel-perf/README.md)
-and [linux-app/kernel-trace/README.md](linux-app/kernel-trace/README.md).
+`linux-app/kernel-perf` demonstrates counting, grouping, sampling,
+tracepoints, kprobes, uprobes, per-PID, and per-CPU use of
+`perf_event_open(2)`. `linux-app/kernel-trace` demonstrates function_graph,
+tracepoints, syscall filters, kprobes/uprobes, hist triggers, synthetic
+events, snapshots, instances, `trace_pipe`, and stack traces through tracefs.
+Both need root inside the guest; advanced trace modes also need a kernel
+rebuilt with the tracing options enabled by `build_kernel.sh`. See
+[linux-app/kernel-perf/README.md](linux-app/kernel-perf/README.md) and
+[linux-app/kernel-trace/README.md](linux-app/kernel-trace/README.md).
+
+`linux-app/ebpf` demonstrates raw `bpf(2)` programs and hand-written eBPF
+instructions: maps, socket filters, kprobes, tracepoints, uprobes,
+`bpf_trace_printk`, `bpf_perf_event_output`, and the verifier. It needs root,
+does not require BTF or a kernel rebuild, and has no clang/libbpf dependency.
+See [linux-app/ebpf/README.md](linux-app/ebpf/README.md).
 
 `linux-app/kernel-drivers` provides out-of-tree virtual character, block, and
 network device modules. Build them with `linux-app/kernel-drivers/build.sh

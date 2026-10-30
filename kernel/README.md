@@ -43,8 +43,15 @@ keyboard and tablet show up as `/dev/input/event*` devices. The amd64 `.config`
 already enables `CONFIG_DRM_VIRTIO_GPU`.
 
 All kernels also enable `FTRACE`, `FUNCTION_TRACER`, `FUNCTION_GRAPH_TRACER`,
-`FTRACE_SYSCALLS`, `KPROBES`, and `KPROBE_EVENTS` for the `linux-app/kernel-trace`
-examples.
+`FTRACE_SYSCALLS`, `KPROBES`, `KPROBE_EVENTS`, `UPROBES`, `UPROBE_EVENTS`,
+`DYNAMIC_EVENTS`, `HIST_TRIGGERS`, `SYNTH_EVENTS`, `TRACER_SNAPSHOT`, and
+`STACKTRACE` for the `linux-app/kernel-trace` examples. `HIST_TRIGGERS` is not
+available on RISC-V configs without `ARCH_HAVE_NMI_SAFE_CMPXCHG`, so the hist and
+synthetic examples skip there.
+
+The pre-built kernel images tracked in this directory were not rebuilt with the
+new trace options. Run `./build-kernel.sh <arch>` to rebuild before using
+`hist`, `synthetic`, or `snapshot` in the guest.
 
 9p (`NET_9P`, `NET_9P_VIRTIO`, `9P_FS`) is also built in for every architecture,
 so the guest can mount QEMU 9p shares.

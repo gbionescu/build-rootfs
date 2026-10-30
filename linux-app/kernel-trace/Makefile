@@ -1,12 +1,14 @@
 CC ?= gcc
 CFLAGS ?= -Wall -Wextra -O2 -g
 
-all: trace_workload
+TARGET := trace_workload
 
-trace_workload: trace_workload.c
-	$(CC) $(CFLAGS) -o $@ $<
+all: $(TARGET)
+
+$(TARGET): trace_workload.c ../common/elf_symbol.h
+	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm -f trace_workload
+	rm -f $(TARGET)
 
 .PHONY: all clean

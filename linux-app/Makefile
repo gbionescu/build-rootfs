@@ -1,4 +1,4 @@
-SUBDIRS := process-fork pthread-sum pipe-ipc shm-sem signal-demo epoll-server mmap-file kernel-perf kernel-trace
+SUBDIRS := process-fork pthread-sum pipe-ipc shm-sem signal-demo epoll-server mmap-file ebpf kernel-perf kernel-trace
 GUI_DIR := stopwatch-qt
 
 all:
@@ -9,6 +9,15 @@ all:
 
 test:
 	./run-all.sh
+
+test-perf:
+	./kernel-perf/run_perf.sh all
+
+test-trace:
+	./kernel-trace/trace_demo.sh all
+
+test-ebpf:
+	./ebpf/run_ebpf.sh all
 
 gui:
 	$(MAKE) -C $(GUI_DIR)
@@ -25,4 +34,4 @@ clean:
 	done
 	$(MAKE) -C $(GUI_DIR) clean
 
-.PHONY: all test gui modules modules-clean clean
+.PHONY: all test test-perf test-trace test-ebpf gui modules modules-clean clean
